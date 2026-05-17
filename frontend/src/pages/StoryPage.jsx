@@ -324,7 +324,7 @@ export default function StoryPage() {
           <AnimatePresence mode="wait">
             {currentTab === 'story' && (
               <motion.div key="story" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                <div className="flex justify-center gap-3 mb-8">
+                <div className="flex flex-wrap justify-center gap-3 mb-8">
                   {storyTypes.map((type) => (
                     <motion.button
                       key={type.id}

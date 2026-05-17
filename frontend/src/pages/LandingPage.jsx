@@ -30,7 +30,7 @@ export default function LandingPage() {
       <main className="relative z-10 px-4 pt-32 pb-16 mx-auto max-w-7xl">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center flex flex-col items-center">
           <img src="/logo.png" alt="CodeStory Logo" className="w-64 h-64 md:w-80 md:h-80 object-contain mb-8 mix-blend-screen drop-shadow-[0_0_15px_rgba(37,99,235,0.5)]" />
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
+          <h1 className="text-4xl md:text-7xl font-extrabold mb-6">
             Your Code Has a Story.{' '}
             <span className="gradient-text">Let AI Tell It.</span>
           </h1>
