@@ -244,7 +244,8 @@ export default function StoryPage() {
 
   const fetchStory = async () => {
     try {
-      const response = await fetch('/api/analyze', {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ github_url: repoUrl, story_type: storyType })
