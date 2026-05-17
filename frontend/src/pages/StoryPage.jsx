@@ -288,6 +288,14 @@ export default function StoryPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentTab, nextSlide, prevSlide])
 
+  useEffect(() => {
+    if (currentTab !== 'story' || !data) return;
+    const timer = setTimeout(() => {
+      nextSlide();
+    }, 6000); // Auto-advance every 6 seconds
+    return () => clearTimeout(timer);
+  }, [currentTab, currentSlide, data, nextSlide]);
+
   if (loading) return (
     <div className="min-h-screen bg-dark-bg">
       <MatrixBackground />
