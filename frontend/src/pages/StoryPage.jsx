@@ -276,7 +276,7 @@ export default function StoryPage() {
 
   const prevSlide = useCallback(() => {
     if (currentSlide > 0) setCurrentSlide(s => s - 1)
-  }, [])
+  }, [currentSlide])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
