@@ -51,6 +51,14 @@ export default function TerminalLoading({ repoName }) {
           <span className="ml-4 text-gray-500 text-sm font-mono">CodeStory Terminal</span>
         </div>
         
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4 text-lg text-center font-bold gradient-text"
+        >
+          Analyzing {repoName || 'repository'}...
+        </motion.div>
+
         <div className="mb-4 text-sm text-gray-400 font-mono">
           <span className="text-primary-purple">root@codestory</span>:<span className="text-blue-400">~</span>$ ./analyze.sh {repoName || 'repository'}
         </div>
@@ -59,6 +67,21 @@ export default function TerminalLoading({ repoName }) {
           {terminalLines.map((line, i) => (
             <TerminalLine key={i} {...line} active={i === activeLine} />
           ))}
+        </div>
+
+        <div className="mb-4">
+          <div className="flex justify-between text-sm text-gray-400 mb-1">
+            <span>Progress</span>
+            <span>{Math.round((activeLine / (terminalLines.length - 1)) * 100)}%</span>
+          </div>
+          <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-gradient-primary"
+              initial={{ width: 0 }}
+              animate={{ width: `${(activeLine / (terminalLines.length - 1)) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
         </div>
 
         <div className="flex justify-center">

@@ -6,18 +6,12 @@ import Navbar from '../components/Navbar'
 import MatrixBackground from '../components/MatrixBackground'
 import TerminalLoading from '../components/TerminalLoading'
 
-const storyTypes = [
-  { id: 'technical', label: 'Technical', icon: '⚙️', description: 'Architecture, tech stack, and code insights' },
-  { id: 'investor', label: 'Investor', icon: '💰', description: 'Market pain, traction, and growth potential' },
-  { id: 'developer', label: 'Developer', icon: '👨‍💻', description: 'What it is, why built, and how to contribute' }
-]
-
 const tabs = [
-  { id: 'story', label: 'Story' },
-  { id: 'improvements', label: 'Improvements' },
-  { id: 'guide', label: 'Guide' },
-  { id: 'resources', label: 'Resources' },
-  { id: 'roadmap', label: 'Roadmap' }
+  { id: 'story', label: 'Story', icon: '📖' },
+  { id: 'improvements', label: 'Improvements', icon: '💡' },
+  { id: 'guide', label: 'Guide', icon: '🛠️' },
+  { id: 'resources', label: 'Resources', icon: '📚' },
+  { id: 'roadmap', label: 'Roadmap', icon: '🗺️' }
 ]
 
 function StorySlide({ slide, meta }) {
@@ -57,7 +51,7 @@ function StorySlide({ slide, meta }) {
         <p className="text-lg text-gray-300 leading-relaxed text-center whitespace-pre-wrap">{content || 'Analyzing...'}</p>
       )}
       
-      {slide.title?.toLowerCase().includes('impact') && (
+      {slide.title?.toLowerCase().includes('metrics') && (
         <div className="mt-6 flex justify-center gap-4 flex-wrap">
           <span className="px-4 py-2 bg-primary-purple/20 rounded-full text-primary-purpleLight border border-primary-purple/30">{meta.language || 'Code'}</span>
           <span className="px-4 py-2 bg-yellow-500/20 rounded-full text-yellow-400 border border-yellow-500/30">⭐ {meta.stars} stars</span>
@@ -69,9 +63,7 @@ function StorySlide({ slide, meta }) {
 }
 
 function ImprovementsTab({ improvements = [] }) {
-  const priorityColors = { High: 'bg-red-500/20 text-red-400 border-red-500/50', Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', Low: 'bg-green-500/20 text-green-400 border-green-500/50' }
-  
-  if (!improvements.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">No improvements available</p></div>
+  if (!improvements || !improvements.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading improvements...</p></div>
   
   const highPriority = improvements.filter(i => i.priority === 'High')
   const mediumPriority = improvements.filter(i => i.priority === 'Medium')
@@ -144,12 +136,13 @@ function ImprovementsTab({ improvements = [] }) {
 function BuildGuideTab({ guide = {} }) {
   const steps = guide.steps || []
   const techStack = guide.tech_stack || []
-  if (!steps.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">No build guide available</p></div>
+  if (!steps || !steps.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading build guide...</p></div>
   
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
         <h2 className="text-3xl font-bold gradient-text mb-2">🛠️ Build Guide</h2>
+        <p className="text-gray-400">{guide.overview || 'Setup instructions'}</p>
       </motion.div>
       <div className="space-y-4">
         {steps.map((step, index) => (
@@ -158,17 +151,24 @@ function BuildGuideTab({ guide = {} }) {
               <div className="w-16 bg-gradient-primary flex items-center justify-center text-2xl font-bold">{step.step || index + 1}</div>
               <div className="flex-1 p-6">
                 <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-gray-400 mb-4">{step.description}</p>
                 {(step.command || step.code) && (
                   <div className="bg-dark-bg rounded-lg p-4 border border-dark-border overflow-x-auto">
                     <pre className="text-sm text-primary-purpleLight font-mono">{step.command || step.code}</pre>
                   </div>
                 )}
+                {step.file && <p className="text-gray-500 text-sm mt-2">📁 {step.file}</p>}
               </div>
             </div>
           </motion.div>
         ))}
       </div>
+      {techStack.length > 0 && (
+        <div className="flex flex-wrap gap-2 justify-center mt-6">
+          {techStack.map((tech, i) => (
+            <span key={i} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-sm">{tech}</span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -177,7 +177,7 @@ function ResourcesTab({ resources = {} }) {
   const docs = resources.documentation || []
   const tutorials = resources.tutorials || []
   const hasContent = docs.length > 0 || tutorials.length > 0
-  if (!hasContent) return <div className="text-center py-12 text-gray-400"><p className="text-xl">No resources available</p></div>
+  if (!hasContent) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading resources...</p></div>
   
   return (
     <div className="space-y-8">
@@ -189,9 +189,22 @@ function ResourcesTab({ resources = {} }) {
           <h3 className="text-xl font-bold text-white mb-4">📖 Documentation</h3>
           <div className="grid gap-3">
             {docs.map((doc, i) => (
-              <motion.a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-4 flex items-center gap-4">
+              <motion.a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer">
                 <div className="text-2xl">📄</div>
                 <div className="flex-1"><h4 className="text-white font-bold">{doc.title}</h4><p className="text-gray-400 text-sm">{doc.description}</p></div>
+              </motion.a>
+            ))}
+          </div>
+        </div>
+      )}
+      {tutorials.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-white mb-4">🎓 Tutorials</h3>
+          <div className="grid gap-3">
+            {tutorials.map((t, i) => (
+              <motion.a key={i} href={t.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer">
+                <div className="text-2xl">🎥</div>
+                <div className="flex-1"><h4 className="text-white font-bold">{t.title}</h4><p className="text-gray-400 text-sm">{t.description}</p></div>
               </motion.a>
             ))}
           </div>
@@ -203,7 +216,7 @@ function ResourcesTab({ resources = {} }) {
 
 function RoadmapTab({ roadmap = {} }) {
   const milestones = roadmap.milestones || []
-  if (!milestones.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">No roadmap available</p></div>
+  if (!milestones || !milestones.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading roadmap...</p></div>
   
   return (
     <div className="space-y-6">
@@ -215,7 +228,7 @@ function RoadmapTab({ roadmap = {} }) {
           <motion.div key={index} initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.15 }} className="glass-card rounded-xl p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-xl font-bold">{index + 1}</div>
-              <div><h3 className="text-xl font-bold text-white">{milestone.title}</h3><span className="text-gray-400 text-sm">{milestone.days} days</span></div>
+              <div><h3 className="text-xl font-bold text-white">{milestone.title}</h3><span className="text-gray-400 text-sm">{milestone.days || 7} days</span></div>
             </div>
             <div className="flex flex-wrap gap-2">
               {(milestone.tasks || []).map((task, i) => (<span key={i} className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">{task}</span>))}
@@ -227,6 +240,18 @@ function RoadmapTab({ roadmap = {} }) {
   )
 }
 
+function RepoStats({ meta }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap justify-center gap-4 mb-6">
+      <span className="px-4 py-2 glass rounded-full text-white font-medium">📦 {meta.name}</span>
+      <span className="px-4 py-2 glass rounded-full text-yellow-400">⭐ {meta.stars}</span>
+      <span className="px-4 py-2 glass rounded-full text-blue-400">🍴 {meta.forks}</span>
+      <span className="px-4 py-2 glass rounded-full text-green-400">📁 {meta.file_count} files</span>
+      {meta.language && <span className="px-4 py-2 glass rounded-full text-purple-400">{meta.language}</span>}
+    </motion.div>
+  )
+}
+
 export default function StoryPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
@@ -234,7 +259,6 @@ export default function StoryPage() {
   const [currentTab, setCurrentTab] = useState('story')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [repoUrl, setRepoUrl] = useState('')
-  const [storyType, setStoryType] = useState('technical')
 
   useEffect(() => {
     const storedUrl = localStorage.getItem('codestory_url')
@@ -248,9 +272,9 @@ export default function StoryPage() {
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ github_url: repoUrl, story_type: storyType })
+        body: JSON.stringify({ github_url: repoUrl })
       })
-      if (!response.ok) throw new Error('Failed')
+      if (!response.ok) throw new Error('Failed to analyze repo')
       const raw = await response.json()
       if (raw.success) setData({ meta: raw.repo_meta, analysis: raw.analysis })
       setLoading(false)
@@ -261,12 +285,8 @@ export default function StoryPage() {
   }
 
   useEffect(() => {
-    if (repoUrl) setTimeout(fetchStory, 3000)
+    if (repoUrl) fetchStory()
   }, [repoUrl])
-
-  useEffect(() => {
-    setCurrentSlide(0)
-  }, [storyType])
 
   const nextSlide = useCallback(() => {
     const slides = data?.analysis?.story_slides || []
@@ -290,9 +310,7 @@ export default function StoryPage() {
 
   useEffect(() => {
     if (currentTab !== 'story' || !data) return;
-    const timer = setTimeout(() => {
-      nextSlide();
-    }, 6000); // Auto-advance every 6 seconds
+    const timer = setTimeout(() => nextSlide(), 6000);
     return () => clearTimeout(timer);
   }, [currentTab, currentSlide, data, nextSlide]);
 
@@ -308,7 +326,7 @@ export default function StoryPage() {
     <div className="min-h-screen bg-dark-bg">
       <MatrixBackground />
       <Navbar />
-      <div className="pt-32 text-center"><p className="text-red-400">Failed to load</p></div>
+      <div className="pt-32 text-center"><p className="text-red-400">Failed to load. Please try again.</p></div>
     </div>
   )
 
@@ -322,6 +340,8 @@ export default function StoryPage() {
       <Navbar />
       <div className="pt-24 pb-8 px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
+          <RepoStats meta={meta} />
+          
           <motion.div className="flex flex-wrap justify-center gap-2 mb-8">
             {tabs.map((tab) => (
               <motion.button key={tab.id} onClick={() => setCurrentTab(tab.id)} className={`px-4 py-2 rounded-xl font-medium transition-all ${currentTab === tab.id ? 'bg-gradient-primary text-white' : 'glass text-gray-400 hover:text-white'}`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -329,27 +349,10 @@ export default function StoryPage() {
               </motion.button>
             ))}
           </motion.div>
+          
           <AnimatePresence mode="wait">
             {currentTab === 'story' && (
               <motion.div key="story" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                <div className="flex flex-wrap justify-center gap-3 mb-8">
-                  {storyTypes.map((type) => (
-                    <motion.button
-                      key={type.id}
-                      onClick={() => setStoryType(type.id)}
-                      className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                        storyType === type.id 
-                          ? 'bg-gradient-primary text-white' 
-                          : 'glass text-gray-400 hover:text-white'
-                      }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <span className="mr-2">{type.icon}</span>
-                      {type.label}
-                    </motion.button>
-                  ))}
-                </div>
                 <div className="mb-6">
                   <div className="flex gap-2 justify-center">
                     {Array.from({ length: totalSlides }).map((_, i) => (

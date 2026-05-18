@@ -22,27 +22,18 @@ app.add_middleware(
 
 class AnalyzeRequest(BaseModel):
     github_url: str
-    story_type: str = 'technical'
 
 def clean_json_string(s):
-    s = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', s)
-    return s
+    return re.sub(r'[\x00-\x1f\x7f-\x9f]', '', s)
 
 async def fetch_github_data(repo_url: str) -> dict:
-    patterns = [r"github\.com/([^/]+)/([^/]+)", r"github\.com/([^/]+)/([^/]+)/.*"]
-    owner, repo = None, None
-    for pattern in patterns:
-        match = re.search(pattern, repo_url)
-        if match:
-            owner, repo = match.group(1), match.group(2).replace(".git", "")
-            break
+    match = re.search(r"github\.com/([^/]+)/([^/]+)", repo_url)
+    if not match:
+        raise Exception(f"Invalid GitHub URL: {repo_url}")
     
-    if not owner or not repo:
-        raise Exception(f"Could not parse GitHub URL: {repo_url}")
-    
-    token = os.getenv("GITHUB_TOKEN")
+    owner, repo = match.group(1), match.group(2).replace(".git", "")
     headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "CodeStory-App"}
-    if token:
+    if token := os.getenv("GITHUB_TOKEN"):
         headers["Authorization"] = f"token {token}"
     
     base = f"https://api.github.com/repos/{owner}/{repo}"
@@ -51,18 +42,19 @@ async def fetch_github_data(repo_url: str) -> dict:
         repo_resp = await client.get(base, headers=headers)
         if repo_resp.status_code == 404:
             raise Exception(f"Repository not found: {owner}/{repo}")
-        elif repo_resp.status_code == 403:
+        if repo_resp.status_code == 403:
             raise Exception("GitHub API rate limit exceeded. Please try again later.")
-        elif repo_resp.status_code != 200:
+        if repo_resp.status_code != 200:
             raise Exception(f"GitHub API error: {repo_resp.status_code}")
+        
         repo_data = repo_resp.json()
         
         readme_resp = await client.get(f"{base}/readme", headers=headers)
         readme_content = ""
         if readme_resp.status_code == 200:
-            readme_data = readme_resp.json()
-            if "content" in readme_data:
-                readme_content = base64.b64decode(readme_data["content"]).decode("utf-8")
+            data = readme_resp.json()
+            if "content" in data:
+                readme_content = base64.b64decode(data["content"]).decode("utf-8")
         
         lang_resp = await client.get(f"{base}/languages", headers=headers)
         languages = lang_resp.json() if lang_resp.status_code == 200 else {}
@@ -71,10 +63,10 @@ async def fetch_github_data(repo_url: str) -> dict:
         files = []
         if tree_resp.status_code == 200:
             tree_data = tree_resp.json()
-            files = [f["path"] for f in tree_data.get("tree", []) if f["type"] == "blob"][:30]
+            files = [f["path"] for f in tree_data.get("tree", []) if f["type"] == "blob"]
         
-        code_exts = ['.py', '.js', '.ts', '.tsx', '.jsx', '.sol', '.dart', '.go', '.rs', '.java']
-        code_files = [f for f in files if any(f.endswith(ext) for ext in code_exts)][:2]
+        code_exts = ['.py', '.js', '.ts', '.tsx', '.jsx', '.sol', '.dart', '.go', '.rs', '.java', '.cpp', '.c', '.rb', '.php']
+        code_files = [f for f in files if any(f.endswith(ext) for ext in code_exts)][:5]
         
         code_contents = {}
         for file_path in code_files:
@@ -83,7 +75,7 @@ async def fetch_github_data(repo_url: str) -> dict:
                 file_data = content_resp.json()
                 if "content" in file_data and file_data.get("encoding") == "base64":
                     try:
-                        code_contents[file_path] = base64.b64decode(file_data["content"]).decode("utf-8")[:800]
+                        code_contents[file_path] = base64.b64decode(file_data["content"]).decode("utf-8")[:1500]
                     except:
                         pass
         
@@ -99,111 +91,87 @@ async def fetch_github_data(repo_url: str) -> dict:
             "url": repo_data.get("html_url"),
             "readme": readme_content,
             "languages": languages,
-            "files": files,
+            "files": files[:50],
             "code_contents": code_contents
         }
 
-async def analyze_with_groq(github_data: dict, story_type: str = 'technical') -> dict:
+async def analyze_with_groq(github_data: dict) -> dict:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise Exception("GROQ_API_KEY not configured")
     
-    repo_name = github_data.get('name', '')
-    repo_owner = github_data.get('owner', '')
-    repo_desc = (github_data.get('description') or 'No description')[:200]
-    repo_lang = github_data.get('language') or 'Unknown'
-    repo_stars = github_data.get('stars', 0)
-    repo_forks = github_data.get('forks', 0)
-    repo_topics = ', '.join(github_data.get('topics', [])[:5]) or 'None'
-    repo_readme = (github_data.get('readme') or 'No README')[:800]
-    repo_files = ', '.join(github_data.get('files', [])[:15])
-    repo_file_count = len(github_data.get('files', []))
-    repo_code_count = len(github_data.get('code_contents', {}))
-    repo_languages = '\n'.join([f"- {k}: {v}" for k, v in (github_data.get('languages') or {}).items()]) or 'Unknown'
-    repo_file_types = ', '.join([f.split('.')[-1] for f in github_data.get('files', [])[:10]]) or 'Unknown'
-    repo_topic_count = len(github_data.get('topics', []))
-    repo_url = github_data.get('url', '')
+    name = github_data.get('name', '')
+    owner = github_data.get('owner', '')
+    desc = github_data.get('description') or ''
+    lang = github_data.get('language') or 'Unknown'
+    stars = github_data.get('stars', 0)
+    forks = github_data.get('forks', 0)
+    topics = ', '.join(github_data.get('topics', [])[:5]) or 'None'
+    readme = github_data.get('readme') or ''
+    file_list = ', '.join(github_data.get('files', [])[:30])
+    file_count = len(github_data.get('files', []))
+    langs = '\n'.join([f"- {k}: {v} bytes" for k, v in (github_data.get('languages') or {}).items()]) or 'Unknown'
+    code_contents = github_data.get('code_contents', {})
+    code_snippets = '\n\n'.join([f"=== {k} ===\n{v}" for k, v in code_contents.items()]) or 'No code available'
     
-    story_configs = {
-        "technical": [
-            {"title": repo_name, "subtitle": "Project Overview", "icon": "⚙️", "content": f"Owner: {repo_owner} | Stars: {repo_stars} | Forks: {repo_forks}\n\nDescription: {repo_desc}\n\nTopics: {repo_topics}"},
-            {"title": "The Problem", "subtitle": "What It Solves", "icon": "🎯", "content": f"From README:\n{repo_readme}"},
-            {"title": "Architecture", "subtitle": "How It Works", "icon": "🏗️", "content": f"File Structure:\n{repo_files}\n\nCode from {repo_code_count} source files analyzed"},
-            {"title": "Tech Stack", "subtitle": "Technologies", "icon": "🛠️", "content": f"Primary: {repo_lang}\n\nLanguages:\n{repo_languages}\n\nFile types: {repo_file_types}"},
-            {"title": "Key Features", "subtitle": "Highlights", "icon": "✨", "content": f"Core functionality based on code structure and analysis"},
-            {"title": "Code Quality", "subtitle": "Metrics", "icon": "📊", "content": f"Stats:\n⭐ {repo_stars} stars\n🍴 {repo_forks} forks\n📁 {repo_file_count} files\n🏷️ {repo_topic_count} topics"},
-            {"title": "Next Steps", "subtitle": "Improvements", "icon": "🚀", "content": "Potential enhancements based on code analysis"}
-        ],
-        "investor": [
-            {"title": repo_name, "subtitle": "Vision & Mission", "icon": "💡", "content": f"Founder: {repo_owner}\n\nMission: {repo_desc}\n\n{repo_topics}"},
-            {"title": "The Problem", "subtitle": "Market Pain", "icon": "😤", "content": f"Pain points addressed:\n{repo_readme}"},
-            {"title": "The Solution", "subtitle": "How It Works", "icon": "💰", "content": f"Key files:\n{repo_files}"},
-            {"title": "Built With", "subtitle": "Technology", "icon": "🏆", "content": f"Tech: {repo_lang}\n\n{repo_languages}"},
-            {"title": "Traction", "subtitle": "Metrics", "icon": "📈", "content": f"⭐ {repo_stars} Stars\n🍴 {repo_forks} Forks\n👥 Active development\n🏷️ {repo_topics}"},
-            {"title": "What's Next", "subtitle": "Growth", "icon": "🎯", "content": "Future roadmap and expansion plans"},
-            {"title": "Get Involved", "subtitle": "Join Us", "icon": "🤝", "content": "Contribute, invest, or partner with us"}
-        ],
-        "developer": [
-            {"title": repo_name, "subtitle": "What Is This", "icon": "👨‍💻", "content": f"Created by {repo_owner}\n\n{repo_desc}\n\nTopics: {repo_topics}"},
-            {"title": "Why Built", "subtitle": "Purpose", "icon": "💭", "content": f"The story behind:\n{repo_readme}"},
-            {"title": "Architecture", "subtitle": "Deep Dive", "icon": "🔍", "content": f"Key files:\n{repo_files}\n\n{repo_code_count} source files"},
-            {"title": "Tech Stack", "subtitle": "Tools Used", "icon": "🛠️", "content": f"Main: {repo_lang}\n\n{repo_languages}\n\n{repo_file_types}"},
-            {"title": "Key Features", "subtitle": "Highlights", "icon": "✨", "content": f"Features:\n- Core modules\n- Main functionality\n- Key configurations"},
-            {"title": "How To Contribute", "subtitle": "Join", "icon": "🤝", "content": "Steps:\n1. Fork the repo\n2. Read the README\n3. Pick an issue\n4. Submit PR"},
-            {"title": "Impact", "subtitle": "Community", "icon": "🌍", "content": f"⭐ {repo_stars} stars\n🍴 {repo_forks} forks"}
-        ]
-    }
+    has_readme = bool(readme and len(readme.strip()) > 50)
     
-    slides = story_configs.get(story_type, story_configs["technical"])
-    
-    prompt = f"""You are analyzing: {repo_name} ({story_type} story)
+    prompt = f"""You are analyzing a GitHub repository: {name} by {owner}
 
-Repository Data:
-- Owner: {repo_owner}
-- Description: {repo_desc}
-- Language: {repo_lang}
-- Stars: {repo_stars}, Forks: {repo_forks}
-- Topics: {repo_topics}
+REPOSITORY INFO:
+- Stars: {stars} | Forks: {forks}
+- Primary Language: {lang}
+- Topics: {topics}
+- Description: {desc or 'No description provided'}
+- Total Files: {file_count}
 
-README:
-{repo_readme}
+README CONTENT:
+{readme if has_readme else '[NO README FOUND - Analyze code instead]'}
 
-Files:
-{repo_files}
+CODE FILES ANALYZED:
+{code_snippets}
 
-Return ONLY this JSON (no markdown, no backticks):
+FILE STRUCTURE:
+{file_list}
+
+Based on the REAL data above, generate a JSON with:
+1. story_slides: 7 slides showing WHAT this project does in simple terms anyone can understand (not technical jargon)
+2. improvements: 3-5 AI-suggested improvements
+3. build_guide: Setup instructions
+4. resources: Useful links
+5. roadmap: Development phases
+
+IMPORTANT: If there's no README, derive understanding from the CODE itself. Look at file names, function names, class names, and code structure to figure out what the project does.
+
+Return ONLY valid JSON (no markdown, no code blocks):
 {{
-  "story_slides": {json.dumps(slides)},
+  "story_slides": [
+    {{"title": "{name}", "subtitle": "What This Project Does", "icon": "🎯", "content": "[2-3 sentences explaining in SIMPLE terms what this project does, like explaining to a non-technical person]"}},
+    {{"title": "The Inspiration", "subtitle": "Why It Exists", "icon": "💡", "content": "[What problem does this solve? Why was it created? Use simple language]"}},
+    {{"title": "Key Features", "subtitle": "What You Can Do", "icon": "✨", "content": "[List the main capabilities/features - what can users actually DO with this?]"}},
+    {{"title": "Tech Stack", "subtitle": "Built With", "icon": "🛠️", "content": "[Main technologies used: {lang}\nLanguages: {langs}]"}},
+    {{"title": "Project Stats", "subtitle": "By The Numbers", "icon": "📊", "content": "⭐ {stars} stars\n🍴 {forks} forks\n📁 {file_count} files\n🏷️ Topics: {topics}"}},
+    {{"title": "Get Started", "subtitle": "How To Use", "icon": "🚀", "content": "[Simple steps to get started - no jargon, just practical advice]"}},
+    {{"title": "Join The Project", "subtitle": "Contribute", "icon": "🤝", "content": "[How can others help? What skills are needed?]"}}
+  ],
   "improvements": [
-    {{"title": "Add [specific feature] in [file]", "description": "Why: [reason]", "priority": "High", "effort": "1 day"}},
-    {{"title": "Add [validation] in [file]", "description": "Why: [security/reliability]", "priority": "High", "effort": "1 week"}},
-    {{"title": "Add unit tests for [module]", "description": "Why: [coverage]", "priority": "Medium", "effort": "1 week"}},
-    {{"title": "Add .env.example", "description": "Why: [DX]", "priority": "Medium", "effort": "1 day"}}
+    {{"title": "[Specific improvement]", "description": "[Why this helps]", "priority": "High|Medium|Low", "effort": "[time estimate]"}},
+    ...
   ],
   "build_guide": {{
-    "overview": "Setup {repo_lang} project",
+    "overview": "[One sentence about setup]",
     "steps": [
-      {{"step": 1, "title": "Clone", "command": "git clone {repo_url}", "file": "README.md"}},
-      {{"step": 2, "title": "Install", "command": "flutter pub get / pip install", "file": "pubspec.yaml or requirements.txt"}},
-      {{"step": 3, "title": "Run", "command": "flutter run / python main.py", "file": "main.dart or main.py"}}
+      {{"step": 1, "title": "Clone", "command": "git clone [url]", "file": "README.md"}},
+      ...
     ],
-    "tech_stack": {json.dumps(list(github_data.get('languages', {}).keys()))}
+    "tech_stack": []
   }},
   "resources": {{
-    "documentation": [
-      {{"title": "{repo_lang} Official Docs", "url": "https://docs.github.com", "description": "Official documentation"}},
-      {{"title": "Project README", "url": "{repo_url}", "description": "Setup guide"}}
-    ],
-    "tutorials": [
-      {{"title": "Getting Started", "url": "{repo_url}", "description": "Learn the basics"}}
-    ]
+    "documentation": [...],
+    "tutorials": [...]
   }},
   "roadmap": {{
-    "milestones": [
-      {{"title": "Phase 1 - Stabilize", "days": 7, "tasks": ["Error handling", "Input validation", "Logging"]}},
-      {{"title": "Phase 2 - Test", "days": 14, "tasks": ["Unit tests", "CI/CD", "Docs"]}},
-      {{"title": "Phase 3 - Scale", "days": 30, "tasks": ["Performance", "Monitoring", "Scale"]}}
-    ]
+    "milestones": [...]
   }}
 }}"""
 
@@ -212,17 +180,17 @@ Return ONLY this JSON (no markdown, no backticks):
     
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You are a code analyst. Analyze the repository and return ONLY valid JSON with no extra text. Structure: {\"story_slides\": [{\"title\": \"...\", \"subtitle\": \"...\", \"icon\": \"...\", \"content\": \"...\"}], \"improvements\": [{\"title\": \"...\", \"description\": \"...\", \"priority\": \"...\", \"effort\": \"...\"}], \"build_guide\": {\"overview\": \"...\", \"steps\": [{\"step\": 1, \"title\": \"...\", \"command\": \"...\", \"file\": \"...\"}], \"tech_stack\": []}, \"resources\": {\"documentation\": [], \"tutorials\": []}, \"roadmap\": {\"milestones\": []}}. Return valid JSON only - no explanations, no extra text before or after."},
+                {"role": "system", "content": "You are a friendly code explainer. Explain projects in SIMPLE terms anyone can understand - no jargon. If no README exists, analyze the code to figure out what the project does."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=3000
+            temperature=0.5,
+            max_tokens=4000
         )
         
-        content = response.choices[0].message.content
-        content = content.strip()
+        content = response.choices[0].message.content.strip()
+        content = clean_json_string(content)
         
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0]
@@ -231,15 +199,12 @@ Return ONLY this JSON (no markdown, no backticks):
             if len(parts) >= 2:
                 content = parts[1]
         
-        content = clean_json_string(content)
-        
         if not content.strip():
             raise Exception("Empty response from Groq")
         
-        result = json.loads(content)
-        return result
+        return json.loads(content)
     except json.JSONDecodeError as e:
-        raise Exception(f"Invalid JSON: {e.msg}")
+        raise Exception(f"Invalid JSON from AI: {e}")
     except Exception as e:
         raise Exception(f"Groq API error: {e}")
 
@@ -250,13 +215,15 @@ async def analyze(request: AnalyzeRequest):
         
         github_data = await fetch_github_data(request.github_url)
         
+        has_readme = bool(github_data.get('readme', '').strip())
         print(f"   ✅ Found: {github_data['name']}")
+        print(f"   📖 README: {'Found' if has_readme else 'Not found - analyzing code'}")
         print(f"   📊 Stars: {github_data['stars']} | Forks: {github_data['forks']}")
         print(f"   🗣️ Language: {github_data['language']}")
-        print(f"   📁 Files: {len(github_data['files'])}")
+        print(f"   📁 Files: {len(github_data['files'])} | Code files: {len(github_data['code_contents'])}")
         
         print("   🤖 Analyzing with Groq...")
-        analysis = await analyze_with_groq(github_data, request.story_type)
+        analysis = await analyze_with_groq(github_data)
         
         return {
             "success": True,
@@ -270,24 +237,20 @@ async def analyze(request: AnalyzeRequest):
                 "topics": github_data["topics"],
                 "url": github_data["url"],
                 "file_count": len(github_data["files"]),
-                "languages": github_data.get("languages", {})
+                "languages": github_data.get("languages", {}),
+                "has_readme": has_readme
             },
             "analysis": analysis
         }
         
-    except json.JSONDecodeError as e:
-        print(f"❌ JSON parse error: {e}")
-        raise HTTPException(status_code=500, detail="AI returned invalid JSON")
     except Exception as e:
         print(f"❌ Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/health")
 def health():
-    return {"status": "healthy", "services": {"github": "ok", "groq": "ok"}}
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
-    import os
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
