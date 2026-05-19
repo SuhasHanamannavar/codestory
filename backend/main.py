@@ -2,6 +2,8 @@ import os
 import json
 import base64
 import re
+import time
+import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -26,52 +28,74 @@ class AnalyzeRequest(BaseModel):
 def clean_json_string(s):
     return re.sub(r'[\x00-\x1f\x7f-\x9f]', '', s)
 
+def build_headers():
+    headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "CodeStory-App"}
+    if token := os.getenv("GITHUB_TOKEN"):
+        headers["Authorization"] = f"token {token}"
+    return headers
+
+async def retry_request(client, url, headers, max_retries=3, base_delay=2):
+    for attempt in range(max_retries):
+        try:
+            resp = await client.get(url, headers=headers)
+            if resp.status_code == 403:
+                remaining = resp.headers.get("X-RateLimit-Remaining", "0")
+                reset_time = resp.headers.get("X-RateLimit-Reset", "")
+                if remaining == "0":
+                    wait_time = int(reset_time) - int(time.time()) + 5 if reset_time.isdigit() else 60
+                    print(f"   ⚠️ Rate limited. Waiting {wait_time}s...")
+                    await asyncio.sleep(min(wait_time, 60))
+                    continue
+            return resp
+        except (httpx.TimeoutException, httpx.ConnectError) as e:
+            if attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt)
+                print(f"   ⚠️ Request failed, retrying in {delay}s...")
+                await asyncio.sleep(delay)
+            else:
+                raise
+    return None
+
 async def fetch_github_data(repo_url: str) -> dict:
     match = re.search(r"github\.com/([^/]+)/([^/]+)", repo_url)
     if not match:
         raise Exception(f"Invalid GitHub URL: {repo_url}")
     
     owner, repo = match.group(1), match.group(2).replace(".git", "")
-    headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "CodeStory-App"}
-    if token := os.getenv("GITHUB_TOKEN"):
-        headers["Authorization"] = f"token {token}"
+    headers = build_headers()
     
-    base = f"https://api.github.com/repos/{owner}/{repo}"
-    
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        repo_resp = await client.get(base, headers=headers)
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        repo_resp = await retry_request(client, f"https://api.github.com/repos/{owner}/{repo}", headers)
+        if not repo_resp:
+            raise Exception("Failed to fetch repository after retries")
         if repo_resp.status_code == 404:
             raise Exception(f"Repository not found: {owner}/{repo}")
         if repo_resp.status_code == 403:
-            raise Exception("GitHub API rate limit exceeded. Please try again later.")
+            raise Exception("GitHub API rate limit exceeded. Please add GITHUB_TOKEN to .env file.")
         if repo_resp.status_code != 200:
             raise Exception(f"GitHub API error: {repo_resp.status_code}")
         
         repo_data = repo_resp.json()
         
-        readme_resp = await client.get(f"{base}/readme", headers=headers)
+        readme_resp = await retry_request(client, f"https://api.github.com/repos/{owner}/{repo}/readme", headers)
         readme_content = ""
-        if readme_resp.status_code == 200:
+        if readme_resp and readme_resp.status_code == 200:
             data = readme_resp.json()
             if "content" in data:
                 readme_content = base64.b64decode(data["content"]).decode("utf-8")
         
-        lang_resp = await client.get(f"{base}/languages", headers=headers)
-        languages = lang_resp.json() if lang_resp.status_code == 200 else {}
+        lang_resp = await retry_request(client, f"https://api.github.com/repos/{owner}/{repo}/languages", headers)
+        languages = lang_resp.json() if lang_resp and lang_resp.status_code == 200 else {}
         
-        tree_resp = await client.get(f"{base}/git/trees/HEAD?recursive=1", headers=headers)
-        files = []
-        if tree_resp.status_code == 200:
-            tree_data = tree_resp.json()
-            files = [f["path"] for f in tree_data.get("tree", []) if f["type"] == "blob"]
+        files = await fetch_tree_with_pagination(client, owner, repo, headers)
         
         code_exts = ['.py', '.js', '.ts', '.tsx', '.jsx', '.sol', '.dart', '.go', '.rs', '.java', '.cpp', '.c', '.rb', '.php']
-        code_files = [f for f in files if any(f.endswith(ext) for ext in code_exts)][:5]
+        code_files = [f for f in files if any(f.endswith(ext) for ext in code_exts)][:10]
         
         code_contents = {}
-        for file_path in code_files:
-            content_resp = await client.get(f"{base}/contents/{file_path}", headers=headers)
-            if content_resp.status_code == 200:
+        for file_path in code_files[:5]:
+            content_resp = await retry_request(client, f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}", headers)
+            if content_resp and content_resp.status_code == 200:
                 file_data = content_resp.json()
                 if "content" in file_data and file_data.get("encoding") == "base64":
                     try:
@@ -91,9 +115,39 @@ async def fetch_github_data(repo_url: str) -> dict:
             "url": repo_data.get("html_url"),
             "readme": readme_content,
             "languages": languages,
-            "files": files[:50],
+            "files": files[:100],
             "code_contents": code_contents
         }
+
+async def fetch_tree_with_pagination(client, owner, repo, headers):
+    all_files = []
+    sha = "HEAD"
+    page_size = 100
+    
+    while True:
+        url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{sha}?recursive=1&per_page={page_size}"
+        resp = await retry_request(client, url, headers, max_retries=3)
+        if not resp or resp.status_code != 200:
+            break
+        
+        data = resp.json()
+        tree = data.get("tree", [])
+        all_files.extend([f["path"] for f in tree if f["type"] == "blob"])
+        
+        if data.get("truncated"):
+            if len(tree) > 0:
+                last_sha = tree[-1].get("sha")
+                if last_sha:
+                    sha = f"{data['sha']}:{last_sha}"
+                    continue
+        break
+    
+    if not all_files and sha != "HEAD":
+        top_files_resp = await retry_request(client, f"https://api.github.com/repos/{owner}/{repo}/contents", headers)
+        if top_files_resp and top_files_resp.status_code == 200:
+            all_files = [f["name"] for f in top_files_resp.json() if f["type"] == "file"]
+    
+    return all_files
 
 async def analyze_with_groq(github_data: dict) -> dict:
     api_key = os.getenv("GROQ_API_KEY")
