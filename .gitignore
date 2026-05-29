@@ -220,3 +220,7 @@ __marimo__/
 # Node/Vite
 node_modules/
 .vite/
+
+# Keep frontend source "lib" directory tracked (the Python template ignores lib/)
+!frontend/src/lib/
+!frontend/src/lib/**

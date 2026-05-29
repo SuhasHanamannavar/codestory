@@ -18,17 +18,20 @@ export default function Navbar() {
             </div>
           </Link>
           
-          <div className="hidden md:flex items-center gap-8">
-            <Link to="/about" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
-              About
-            </Link>
-            <Link to="/how-it-works" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
-              How It Works
-            </Link>
-            <Link to="/documentation" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
-              Documentation
-            </Link>
-          </div>
+           <div className="hidden md:flex items-center gap-8">
+             <Link to="/" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
+               Dashboard
+             </Link>
+             <Link to="/about" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
+               About
+             </Link>
+             <Link to="/how-it-works" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
+               How It Works
+             </Link>
+             <Link to="/documentation" className="text-sm tracking-wider text-gray-300 hover:text-white transition-colors uppercase">
+               Documentation
+             </Link>
+           </div>
         </div>
       </div>
     </motion.nav>

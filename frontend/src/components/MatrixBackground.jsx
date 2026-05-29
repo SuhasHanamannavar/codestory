@@ -5,9 +5,15 @@ export default function MatrixBackground() {
   
   useEffect(() => {
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    if (!ctx) return
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
     
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789'
     const fontSize = 14
@@ -31,7 +37,11 @@ export default function MatrixBackground() {
     }
     
     const interval = setInterval(draw, 50)
-    return () => clearInterval(interval)
+    window.addEventListener('resize', resize)
+    return () => {
+      window.removeEventListener('resize', resize)
+      clearInterval(interval)
+    }
   }, [])
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none opacity-30" />

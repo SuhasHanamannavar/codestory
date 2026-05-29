@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import DashboardPage from './pages/DashboardPage'
 import LandingPage from './pages/LandingPage'
 import StoryPage from './pages/StoryPage'
 import AboutPage from './pages/AboutPage'
@@ -9,7 +10,8 @@ function App() {
   return (
     <div className="min-h-screen bg-dark-bg">
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/legacy" element={<LandingPage />} />
         <Route path="/story" element={<StoryPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
