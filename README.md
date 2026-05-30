@@ -4,18 +4,41 @@ An AI-powered GitHub repository intelligence platform that transforms any codeba
 
 ## 🚀 Key Features
 
-- **Ownership & Risk Graphs:** Analyzes GitHub commit history to generate a module-level dependency and ownership graph. Identifies key bottlenecks and code silos.
-- **Resignation Simulation:** "What if Alice leaves tomorrow?" Simulates the risk impact dynamically across your codebase.
-- **Automated Rescue Playbooks:** Generates AI-driven handover schedules, technical transfer guides, and client communication plans.
-- **Notion Integration:** Instantly export generated rescue plans to Notion.
-- **GitHub OAuth Login:** Support for both public repositories (via server token) and private repositories (via user OAuth token).
-- **Background Processing:** Robust asynchronous job queue utilizing Redis to handle large repository ingestions smoothly.
+### 1. Ownership & Risk Graphs (The "Bus Factor" Map)
+- **What it does:** Analyzes the commit history of any GitHub repository to generate a dynamic, module-level dependency graph.
+- **How it works:** It fetches up to 25 recent commits, tracks which developer touched which file, and aggregates this into module-level "ownership shares." 
+- **Value:** Instantly visually identifies code silos—modules where a single developer holds the majority of the knowledge.
+
+### 2. Resignation Simulation
+- **What it does:** Allows you to select a developer and simulate the impact of them leaving the team tomorrow.
+- **How it works:** Recalculates the risk scores of all modules owned by that developer, triggering a real-time, animated transition on the graph (modules turn red to indicate high risk/knowledge loss).
+- **Value:** Provides a tangible, visual representation of knowledge risk to project managers and stakeholders.
+
+### 3. Automated Rescue Playbooks
+- **What it does:** Generates actionable handover documentation to mitigate the simulated risk.
+- **How it works:** Once a resignation is simulated, the backend (via Groq/LLM integration) generates a 30-day transfer schedule, a technical handover playbook, and a client communication plan.
+- **Value:** Turns a scary risk metric into a concrete, executable mitigation strategy.
+
+### 4. Notion Integration
+- **What it does:** Seamlessly exports the generated Rescue Playbooks to your company's Notion workspace.
+- **How it works:** Uses the Notion API to create a structured document containing the impact map and the 30-day handover schedule.
+- **Value:** Integrates directly into existing project management workflows.
+
+### 5. Flexible GitHub Authentication
+- **What it does:** Supports analyzing both public and private repositories.
+- **Mode A (Server Token):** Uses an environment-level `GITHUB_TOKEN` for seamless public repository analysis without user login.
+- **Mode B (OAuth):** Features a "Sign in with GitHub" flow, allowing users to authenticate and ingest private repositories they have access to.
+
+### 6. Robust Background Processing
+- **What it does:** Prevents UI freezing and timeouts when analyzing massive repositories.
+- **How it works:** When `USE_BACKGROUND_INGEST=1`, the backend drops ingestion jobs into a Redis queue. A separate Python worker process picks up the job, processes the GitHub API calls, and saves the graph back to Redis. The React frontend actively polls for job completion.
+- **Value:** Enterprise-grade reliability and UX.
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React, Tailwind CSS, Vite, Cytoscape (for graph visualization), Framer Motion
-- **Backend:** FastAPI, Python, Redis, PostgreSQL, HTTPX
-- **Infrastructure:** Docker, Docker Compose
+- **Frontend:** React, Tailwind CSS, Vite, Cytoscape (for complex graph physics & visualization), Framer Motion (for fluid UI animations).
+- **Backend:** FastAPI (high-performance Python API), HTTPX (async requests), Redis (queue/state management), PostgreSQL (database).
+- **Infrastructure:** Docker, Docker Compose for simple 1-click deployments.
 
 ## ⚙️ Getting Started
 
