@@ -1,38 +1,62 @@
-# CodeStory
+# CodeStory: TurnoverGuard
 
-AI-powered GitHub repo intelligence platform - Transform any codebase into visual stories
+An AI-powered GitHub repository intelligence platform that transforms any codebase into visual stories, maps module ownership, and mitigates the "bus factor" through developer turnover simulation.
 
-## Tech Stack
+## 🚀 Key Features
 
-- **Frontend:** React + Tailwind CSS
-- **Backend:** FastAPI (main.py)
+- **Ownership & Risk Graphs:** Analyzes GitHub commit history to generate a module-level dependency and ownership graph. Identifies key bottlenecks and code silos.
+- **Resignation Simulation:** "What if Alice leaves tomorrow?" Simulates the risk impact dynamically across your codebase.
+- **Automated Rescue Playbooks:** Generates AI-driven handover schedules, technical transfer guides, and client communication plans.
+- **Notion Integration:** Instantly export generated rescue plans to Notion.
+- **GitHub OAuth Login:** Support for both public repositories (via server token) and private repositories (via user OAuth token).
+- **Background Processing:** Robust asynchronous job queue utilizing Redis to handle large repository ingestions smoothly.
 
-## Get Started
+## 🛠️ Tech Stack
 
-```bash
-# Backend (port 8000)
-cd backend && pip install -r requirements.txt && python main.py
+- **Frontend:** React, Tailwind CSS, Vite, Cytoscape (for graph visualization), Framer Motion
+- **Backend:** FastAPI, Python, Redis, PostgreSQL, HTTPX
+- **Infrastructure:** Docker, Docker Compose
 
-# Frontend (port 3000)
-cd frontend && npm install && npm run dev
+## ⚙️ Getting Started
+
+### Prerequisites
+Create a `.env` file in the root directory:
+```env
+USE_BACKGROUND_INGEST=1
+GITHUB_CLIENT_ID=your_oauth_app_client_id
+GITHUB_CLIENT_SECRET=your_oauth_app_client_secret
+GITHUB_TOKEN=your_personal_access_token_for_public_fallback
+NOTION_API_KEY=your_notion_api_key
+NOTION_DATABASE_ID=your_notion_db_id
 ```
 
-## Demo Dashboard
+### Option 1: Run with Docker (Recommended)
+The application is fully containerized with Postgres, Redis, a Backend API, an Ingestion Worker, and the Frontend UI.
+```bash
+docker compose up --build
+```
+Access the dashboard at `http://localhost:3000`.
 
-The main demo UI is now the dashboard at `/` (graph + resignation simulation + playbooks + Notion save).
+### Option 2: Run Locally (No Docker)
+If you don't have Docker installed, you can run the app in synchronous mode using the provided helper scripts. This bypasses Redis and Postgres.
 
-During integration, the dashboard expects these backend endpoints:
+**Windows:**
+```powershell
+.\run_local.bat
+```
 
-- `POST /api/ingest` `{ github_url }` → `{ nodes, edges }`
-- `POST /api/simulate_resignation` `{ github_url, developer }` → `{ before:{nodes,edges}, after:{nodes,edges}, deltas:[...] }`
-- `POST /api/rescue_plan` `{ github_url, developer }` → `{ impact_map, transfer_schedule_30d, playbooks:{technical,client} }`
-- `POST /api/notion/save` `{ github_url, rescue_plan }` → `{ notion_page_url }`
+**Mac/Linux:**
+```bash
+./run_local.sh
+```
+Access the dashboard at `http://localhost:5173` (or the port specified by Vite).
 
-Legacy landing page is available at `/legacy`.
+## 📡 API Endpoints
 
-Enter any public GitHub repo URL and get a visual story with:
-- AI-generated story slides
-- Improvement suggestions
-- Build guide
-- Resources
-- Roadmap
+- `POST /api/ingest` - Accepts `{ github_url }`, enqueues a job, and returns `{ status: "enqueued", job_id: "..." }`.
+- `GET /api/job/{job_id}` - Polls the status of the ingestion job.
+- `GET /api/graph/{job_id}` - Returns the finalized graph `{ nodes, edges }`.
+- `POST /api/simulate_resignation` - Accepts `{ github_url, developer }`, returning `{ before, after, deltas }`.
+- `POST /api/rescue_plan` - Accepts `{ github_url, developer }`, returning generated playbooks and schedules.
+- `POST /api/notion/save` - Accepts `{ github_url, rescue_plan }` and exports to Notion.
+- `GET /auth/github/start` & `/auth/github/callback` - OAuth flow endpoints.
