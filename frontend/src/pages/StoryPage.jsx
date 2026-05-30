@@ -21,9 +21,9 @@ function StorySlide({ slide, meta }) {
   
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
+      initial={{ opacity: 0, y: 24 }} 
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="glass-card rounded-2xl p-8 max-w-4xl mx-auto"
     >
       <div className="text-center mb-6">
@@ -37,9 +37,9 @@ function StorySlide({ slide, meta }) {
           {items.slice(0, 8).map((item, i) => (
             <motion.div 
               key={i} 
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-start gap-3 text-lg text-gray-300"
             >
               <span className="text-primary-purple">•</span>
@@ -62,6 +62,8 @@ function StorySlide({ slide, meta }) {
   )
 }
 
+const hoverSpring = { type: 'spring', stiffness: 400, damping: 25 }
+
 function ImprovementsTab({ improvements = [] }) {
   if (!improvements || !improvements.length) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading improvements...</p></div>
   
@@ -71,7 +73,12 @@ function ImprovementsTab({ improvements = [] }) {
   
   return (
     <div className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="text-center mb-8"
+      >
         <h2 className="text-3xl font-bold gradient-text mb-2">AI Improvement Suggestions</h2>
         <p className="text-gray-400">Prioritized by impact and effort</p>
       </motion.div>
@@ -81,7 +88,14 @@ function ImprovementsTab({ improvements = [] }) {
           <h3 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">🔴 High Priority</h3>
           <div className="grid gap-4 mb-6">
             {highPriority.map((item, index) => (
-              <motion.div key={index} initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-6 border border-red-500/30">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -32 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-6 border border-red-500/30"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/50">High</span>
@@ -99,7 +113,14 @@ function ImprovementsTab({ improvements = [] }) {
           <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">🟡 Medium Priority</h3>
           <div className="grid gap-4 mb-6">
             {mediumPriority.map((item, index) => (
-              <motion.div key={index} initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-6 border border-yellow-500/30">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -32 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-6 border border-yellow-500/30"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/50">Medium</span>
@@ -117,7 +138,14 @@ function ImprovementsTab({ improvements = [] }) {
           <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">🟢 Low Priority</h3>
           <div className="grid gap-4">
             {lowPriority.map((item, index) => (
-              <motion.div key={index} initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-6 border border-green-500/30">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -32 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-6 border border-green-500/30"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/50">Low</span>
@@ -140,13 +168,20 @@ function BuildGuideTab({ guide = {} }) {
   
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="text-center mb-8">
         <h2 className="text-3xl font-bold gradient-text mb-2">🛠️ Build Guide</h2>
         <p className="text-gray-400">{guide.overview || 'Setup instructions'}</p>
       </motion.div>
       <div className="space-y-4">
         {steps.map((step, index) => (
-          <motion.div key={index} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.15 }} className="glass-card rounded-xl overflow-hidden">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.12, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.01 }}
+            className="glass-card rounded-xl overflow-hidden"
+          >
             <div className="flex items-stretch">
               <div className="w-16 bg-gradient-primary flex items-center justify-center text-2xl font-bold">{step.step || index + 1}</div>
               <div className="flex-1 p-6">
@@ -179,9 +214,11 @@ function ResourcesTab({ resources = {} }) {
   const hasContent = docs.length > 0 || tutorials.length > 0
   if (!hasContent) return <div className="text-center py-12 text-gray-400"><p className="text-xl">Loading resources...</p></div>
   
+  const appear = { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+  
   return (
     <div className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={appear} className="text-center mb-8">
         <h2 className="text-3xl font-bold gradient-text mb-2">📚 Resources</h2>
       </motion.div>
       {docs.length > 0 && (
@@ -189,7 +226,17 @@ function ResourcesTab({ resources = {} }) {
           <h3 className="text-xl font-bold text-white mb-4">📖 Documentation</h3>
           <div className="grid gap-3">
             {docs.map((doc, i) => (
-              <motion.a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer">
+              <motion.a
+                key={i}
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06, ...appear }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer"
+              >
                 <div className="text-2xl">📄</div>
                 <div className="flex-1"><h4 className="text-white font-bold">{doc.title}</h4><p className="text-gray-400 text-sm">{doc.description}</p></div>
               </motion.a>
@@ -202,7 +249,17 @@ function ResourcesTab({ resources = {} }) {
           <h3 className="text-xl font-bold text-white mb-4">🎓 Tutorials</h3>
           <div className="grid gap-3">
             {tutorials.map((t, i) => (
-              <motion.a key={i} href={t.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} whileHover={{ scale: 1.02 }} className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer">
+              <motion.a
+                key={i}
+                href={t.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06, ...appear }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer"
+              >
                 <div className="text-2xl">🎥</div>
                 <div className="flex-1"><h4 className="text-white font-bold">{t.title}</h4><p className="text-gray-400 text-sm">{t.description}</p></div>
               </motion.a>
@@ -220,12 +277,18 @@ function RoadmapTab({ roadmap = {} }) {
   
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="text-center mb-8">
         <h2 className="text-3xl font-bold gradient-text mb-2">🗺️ Roadmap</h2>
       </motion.div>
       <div className="space-y-4">
         {milestones.map((milestone, index) => (
-          <motion.div key={index} initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.15 }} className="glass-card rounded-xl p-6">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -32 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="glass-card rounded-xl p-6"
+          >
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-xl font-bold">{index + 1}</div>
               <div><h3 className="text-xl font-bold text-white">{milestone.title}</h3><span className="text-gray-400 text-sm">{milestone.days || 7} days</span></div>
@@ -242,7 +305,12 @@ function RoadmapTab({ roadmap = {} }) {
 
 function RepoStats({ meta }) {
   return (
-    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap justify-center gap-4 mb-6">
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-wrap justify-center gap-4 mb-6"
+    >
       <span className="px-4 py-2 glass rounded-full text-white font-medium">📦 {meta.name}</span>
       <span className="px-4 py-2 glass rounded-full text-yellow-400">⭐ {meta.stars}</span>
       <span className="px-4 py-2 glass rounded-full text-blue-400">🍴 {meta.forks}</span>
@@ -252,12 +320,21 @@ function RepoStats({ meta }) {
   )
 }
 
+const easeCard = { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+const easePage = { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? 120 : -120, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir) => ({ x: dir > 0 ? -120 : 120, opacity: 0 }),
+}
+
 export default function StoryPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [currentTab, setCurrentTab] = useState('story')
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [slideDir, setSlideDir] = useState(1)
   const [repoUrl, setRepoUrl] = useState('')
 
   useEffect(() => {
@@ -290,12 +367,12 @@ export default function StoryPage() {
 
   const nextSlide = useCallback(() => {
     const slides = data?.analysis?.story_slides || []
-    if (currentSlide < slides.length - 1) setCurrentSlide(s => s + 1)
+    if (currentSlide < slides.length - 1) { setSlideDir(1); setCurrentSlide(s => s + 1) }
     if (currentSlide === slides.length - 1) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
   }, [currentSlide, data])
 
   const prevSlide = useCallback(() => {
-    if (currentSlide > 0) setCurrentSlide(s => s - 1)
+    if (currentSlide > 0) { setSlideDir(-1); setCurrentSlide(s => s - 1) }
   }, [currentSlide])
 
   useEffect(() => {
@@ -342,9 +419,21 @@ export default function StoryPage() {
         <div className="max-w-6xl mx-auto">
           <RepoStats meta={meta} />
           
-          <motion.div className="flex flex-wrap justify-center gap-2 mb-8">
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="flex flex-wrap justify-center gap-2 mb-8">
             {tabs.map((tab) => (
-              <motion.button key={tab.id} onClick={() => setCurrentTab(tab.id)} className={`px-4 py-2 rounded-xl font-medium transition-all ${currentTab === tab.id ? 'bg-gradient-primary text-white' : 'glass text-gray-400 hover:text-white'}`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.button
+                key={tab.id}
+                onClick={() => setCurrentTab(tab.id)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.12, ease: [0.34, 1.56, 0.64, 1] }}
+                className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+                  currentTab === tab.id
+                    ? 'bg-gradient-primary text-white shadow-lg shadow-primary-purple/25'
+                    : 'glass text-gray-400 hover:text-white'
+                }`}
+                style={{ transitionDuration: '150ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+              >
                 {tab.icon} {tab.label}
               </motion.button>
             ))}
@@ -352,7 +441,7 @@ export default function StoryPage() {
           
           <AnimatePresence mode="wait">
             {currentTab === 'story' && (
-              <motion.div key="story" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+              <motion.div key="story" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={easeCard}>
                 <div className="mb-6">
                   <div className="flex gap-2 justify-center">
                     {Array.from({ length: totalSlides }).map((_, i) => (
@@ -361,23 +450,49 @@ export default function StoryPage() {
                   </div>
                 </div>
                 <div className="relative">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={currentSlide} initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} transition={{ duration: 0.4 }}>
+                  <AnimatePresence mode="wait" custom={slideDir}>
+                    <motion.div
+                      key={currentSlide}
+                      custom={slideDir}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={easePage}
+                    >
                       <StorySlide slide={slides[currentSlide] || {}} meta={meta} />
                     </motion.div>
                   </AnimatePresence>
                 </div>
                 <div className="flex justify-between items-center mt-8">
-                  <motion.button onClick={prevSlide} disabled={currentSlide === 0} className="px-6 py-3 rounded-xl glass-card disabled:opacity-30" whileHover={{ scale: 1.05 }}>Previous</motion.button>
+                  <motion.button
+                    onClick={prevSlide}
+                    disabled={currentSlide === 0}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.12, ease: [0.34, 1.56, 0.64, 1] }}
+                    className="px-6 py-3 rounded-xl glass-card disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </motion.button>
                   <span className="text-gray-400 font-mono">{currentSlide + 1} / {totalSlides}</span>
-                  <motion.button onClick={nextSlide} disabled={currentSlide === totalSlides - 1} className="px-6 py-3 rounded-xl bg-gradient-primary disabled:opacity-30" whileHover={{ scale: 1.05 }}>Next</motion.button>
+                  <motion.button
+                    onClick={nextSlide}
+                    disabled={currentSlide === totalSlides - 1}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.12, ease: [0.34, 1.56, 0.64, 1] }}
+                    className="px-6 py-3 rounded-xl bg-gradient-primary disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </motion.button>
                 </div>
               </motion.div>
             )}
-            {currentTab === 'improvements' && <motion.div key="improvements" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><ImprovementsTab improvements={analysis?.improvements || []} /></motion.div>}
-            {currentTab === 'guide' && <motion.div key="guide" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><BuildGuideTab guide={analysis?.build_guide || {}} /></motion.div>}
-            {currentTab === 'resources' && <motion.div key="resources" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><ResourcesTab resources={analysis?.resources || {}} /></motion.div>}
-            {currentTab === 'roadmap' && <motion.div key="roadmap" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><RoadmapTab roadmap={analysis?.roadmap || {}} /></motion.div>}
+            {currentTab === 'improvements' && <motion.div key="improvements" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={easeCard}><ImprovementsTab improvements={analysis?.improvements || []} /></motion.div>}
+            {currentTab === 'guide' && <motion.div key="guide" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={easeCard}><BuildGuideTab guide={analysis?.build_guide || {}} /></motion.div>}
+            {currentTab === 'resources' && <motion.div key="resources" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={easeCard}><ResourcesTab resources={analysis?.resources || {}} /></motion.div>}
+            {currentTab === 'roadmap' && <motion.div key="roadmap" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={easeCard}><RoadmapTab roadmap={analysis?.roadmap || {}} /></motion.div>}
           </AnimatePresence>
         </div>
       </div>

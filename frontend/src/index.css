@@ -15,6 +15,32 @@
   --dark-border: #1e1e2e;
   --primary-purple: #7c3aed;
   --primary-purpleLight: #a78bfa;
+
+  /* Animation easings */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Motion durations */
+  --dur-hover: 120ms;
+  --dur-press: 150ms;
+  --dur-card: 300ms;
+  --dur-page: 400ms;
+
+  /* Spacing scale */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+}
+
+.motion-safe {
+  transition-timing-function: var(--ease-out-expo);
+  transition-duration: var(--dur-card);
 }
 
 * {
@@ -56,7 +82,8 @@ body {
 .glow-input {
   background: rgba(18, 18, 26, 0.9);
   border: 1px solid var(--dark-border);
-  transition: all 0.3s;
+  transition: border-color var(--dur-hover) var(--ease-out-expo),
+              box-shadow var(--dur-hover) var(--ease-out-expo);
 }
 
 .glow-input:focus {
@@ -67,13 +94,20 @@ body {
 
 .glow-button {
   background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
-  transition: all 0.3s;
+  transition: transform var(--dur-hover) var(--ease-spring),
+              box-shadow var(--dur-hover) var(--ease-out-expo);
   border-radius: 12px;
+  will-change: transform;
 }
 
 .glow-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+}
+
+.glow-button:active {
+  transform: translateY(0px) scale(0.98);
+  transition-duration: var(--dur-press);
 }
 
 .gradient-text {

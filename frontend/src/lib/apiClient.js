@@ -13,9 +13,15 @@ function apiBase() {
 }
 
 export async function apiPost(path, body) {
+  const token = localStorage.getItem('github_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const resp = await fetch(`${apiBase()}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body ?? {})
   })
 
@@ -31,7 +37,13 @@ export async function apiPost(path, body) {
 }
 
 export async function apiGet(path) {
-  const resp = await fetch(`${apiBase()}${path}`)
+  const token = localStorage.getItem('github_token');
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const resp = await fetch(`${apiBase()}${path}`, { headers })
   const data = await readJson(resp)
   if (!resp.ok) {
     const msg = data?.detail || data?.message || `HTTP ${resp.status}`

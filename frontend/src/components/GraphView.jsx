@@ -196,7 +196,7 @@ export default function GraphView({
   }, [selectedNodeId])
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-4 h-[520px]">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="glass-card rounded-2xl p-4 h-[520px]">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold tracking-wide text-gray-200">Knowledge Graph</h3>

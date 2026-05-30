@@ -1,28 +1,22 @@
+import os
 import httpx
 import base64
-import re
+
+from services.github_utils import parse_github_url
 
 class GitHubEngine:
-    def __init__(self):
+    def __init__(self, user_token=None):
         self.base_url = "https://api.github.com"
+        self.token = user_token or os.getenv("GITHUB_TOKEN")
         self.headers = {
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "CodeStory-App"
         }
-
-    def parse_repo_url(self, url):
-        patterns = [
-            r"github\.com/([^/]+)/([^/]+)",
-            r"github\.com/([^/]+)/([^/]+)/.*",
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, url)
-            if match:
-                return match.group(1), match.group(2).replace(".git", "")
-        return None, None
+        if self.token:
+            self.headers["Authorization"] = f"token {self.token}"
 
     async def get_repository_async(self, repo_url):
-        owner, repo = self.parse_repo_url(repo_url)
+        owner, repo = parse_github_url(repo_url)
         if not owner or not repo:
             return None
 

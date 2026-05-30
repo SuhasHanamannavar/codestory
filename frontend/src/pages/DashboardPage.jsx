@@ -8,7 +8,7 @@ import RiskSummaryPanel from '../components/RiskSummaryPanel'
 import PlaybooksPanel from '../components/PlaybooksPanel'
 import NotionSaveButton from '../components/NotionSaveButton'
 import NodeDetailsPanel from '../components/NodeDetailsPanel'
-import { apiPost } from '../lib/apiClient'
+import { apiPost, apiGet } from '../lib/apiClient'
 
 function normalizeGraph(input) {
   // Supports multiple backend shapes during integration.
@@ -78,14 +78,30 @@ export default function DashboardPage() {
 
     setLoadingRepo(true)
     try {
-      // Contract suggestion (Guru Raj): POST /api/ingest { github_url }
-      // During integration, this can be swapped to the real endpoint.
       const data = await apiPost('/api/ingest', { github_url: url })
-      const g = normalizeGraph(data)
-      setGraph(g)
-    } catch {
-      // If backend not ready yet, keep placeholder so UI is demo-ready.
-      setGraph(null)
+      
+      if (data.status === 'enqueued') {
+        let jobFinished = false;
+        let finalGraph = null;
+        while (!jobFinished) {
+          await new Promise(r => setTimeout(r, 2000));
+          const jobData = await apiGet(`/api/job/${data.job_id}`);
+          if (jobData.status === 'finished') {
+            const graphData = await apiGet(`/api/graph/${data.job_id}`);
+            finalGraph = normalizeGraph(graphData);
+            jobFinished = true;
+          } else if (jobData.status === 'failed') {
+            throw new Error(jobData.error || 'Ingestion failed');
+          }
+        }
+        setGraph(finalGraph);
+      } else {
+        const g = normalizeGraph(data)
+        setGraph(g)
+      }
+    } catch (e) {
+      alert(`Ingestion failed: ${e.message}`);
+      setGraph({ nodes: [], edges: [] });
     } finally {
       setLoadingRepo(false)
     }
@@ -109,13 +125,14 @@ export default function DashboardPage() {
         after
       })
 
-      // Smooth risk transition for the "wow" moment.
+      // Smooth risk transition with ease-out for the "wow" moment.
       const start = performance.now()
       const dur = 1100
       const tick = (now) => {
-        const t = Math.min(1, (now - start) / dur)
+        const p = Math.min(1, (now - start) / dur)
+        const t = 1 - Math.pow(1 - p, 3)
         setGraph(interpolateGraphRisk(before, after, t))
-        if (t < 1) requestAnimationFrame(tick)
+        if (p < 1) requestAnimationFrame(tick)
       }
       requestAnimationFrame(tick)
 
@@ -183,9 +200,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="text-xs text-gray-500">
-              UI contract placeholders: this dashboard expects backend endpoints `/api/ingest`, `/api/simulate_resignation`, `/api/rescue_plan`, `/api/notion/save`.
-            </div>
           </div>
         </div>
       </div>

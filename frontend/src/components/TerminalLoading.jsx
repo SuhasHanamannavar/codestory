@@ -20,7 +20,7 @@ function TerminalLine({ cmd, desc, delay, active }) {
   if (!show) return null
 
   return (
-    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 mb-2 font-mono text-sm">
+      <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="flex items-center gap-3 mb-2 font-mono text-sm">
       <span className="text-primary-purple">$</span>
       <span className="text-blue-400">{cmd}</span>
       <span className="text-gray-500">{desc}</span>
@@ -43,7 +43,7 @@ export default function TerminalLoading({ repoName }) {
 
   return (
     <div className="pt-32 flex items-center justify-center">
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass rounded-2xl p-8 w-full max-w-2xl border border-primary-purple/30">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="glass rounded-2xl p-8 w-full max-w-2xl border border-primary-purple/30">
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-4">
           <div className="w-3 h-3 rounded-full bg-red-500" />
           <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -79,7 +79,7 @@ export default function TerminalLoading({ repoName }) {
               className="h-full bg-gradient-primary"
               initial={{ width: 0 }}
               animate={{ width: `${(activeLine / (terminalLines.length - 1)) * 100}%` }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
         </div>

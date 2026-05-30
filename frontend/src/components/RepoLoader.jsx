@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import StatusChip from './StatusChip'
 
+const springTap = { type: 'spring', stiffness: 500, damping: 30 }
+
 export default function RepoLoader({
   initialUrl = '',
   loading = false,
@@ -17,7 +19,7 @@ export default function RepoLoader({
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl px-4 py-3">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="glass rounded-2xl px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
@@ -35,13 +37,16 @@ export default function RepoLoader({
           placeholder="https://github.com/owner/repo"
           className="flex-1 px-4 py-3 rounded-xl text-sm glow-input text-white placeholder-gray-500"
         />
-        <button
+        <motion.button
           type="submit"
           disabled={loading || !repoUrl.trim()}
+          whileHover={!loading && repoUrl.trim() ? { scale: 1.03 } : {}}
+          whileTap={!loading && repoUrl.trim() ? { scale: 0.97 } : {}}
+          transition={springTap}
           className="px-5 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Load Repository
-        </button>
+        </motion.button>
       </form>
     </motion.div>
   )

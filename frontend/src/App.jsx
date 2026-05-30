@@ -5,6 +5,8 @@ import StoryPage from './pages/StoryPage'
 import AboutPage from './pages/AboutPage'
 import HowItWorksPage from './pages/HowItWorksPage'
 import DocumentationPage from './pages/DocumentationPage'
+import TurnoverGuardPage from './pages/TurnoverGuardPage'
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/documentation" element={<DocumentationPage />} />
+        <Route path="/turnover-guard" element={<TurnoverGuardPage />} />
       </Routes>
     </div>
   )
