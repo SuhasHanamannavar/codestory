@@ -59,7 +59,7 @@ function FooterSection() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="TG" className="w-8 h-8" />
+            <img src="/logo.jpg" alt="TG" className="w-8 h-8 rounded-full" />
             <span className="text-sm text-gray-500">TurnoverGuard © 2026</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-500">

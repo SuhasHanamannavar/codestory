@@ -48,7 +48,7 @@ export default function Navbar() {
         <div className="glass elevation-md rounded-2xl px-6 py-3 flex items-center justify-between border border-primary-purple/10">
           <Link to="/" className="flex items-center gap-3 group">
             <img
-              src="/logo.svg"
+              src="/logo.jpg"
               alt="TurnoverGuard"
               className="w-10 h-10 transition-transform duration-250 group-hover:scale-105"
             />
