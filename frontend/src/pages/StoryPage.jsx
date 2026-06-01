@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import Navbar from '../components/Navbar'
 import MatrixBackground from '../components/MatrixBackground'
+import AmbientGlow from '../components/AmbientGlow'
+import GridBackground from '../components/GridBackground'
 import TerminalLoading from '../components/TerminalLoading'
 
 const tabs = [
@@ -24,7 +26,7 @@ function StorySlide({ slide, meta }) {
       initial={{ opacity: 0, y: 24 }} 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="glass-card rounded-2xl p-8 max-w-4xl mx-auto"
+      className="glass-card-elevated p-8 max-w-4xl mx-auto"
     >
       <div className="text-center mb-6">
         <div className="text-4xl mb-4">{slide.icon || '📖'}</div>
@@ -94,7 +96,7 @@ function ImprovementsTab({ improvements = [] }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ scale: 1.02 }}
-                className="glass-card rounded-xl p-6 border border-red-500/30"
+                className="glass-card-elevated p-6 border border-red-500/30"
               >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
@@ -119,7 +121,7 @@ function ImprovementsTab({ improvements = [] }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ scale: 1.02 }}
-                className="glass-card rounded-xl p-6 border border-yellow-500/30"
+                className="glass-card-elevated p-6 border border-yellow-500/30"
               >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
@@ -144,7 +146,7 @@ function ImprovementsTab({ improvements = [] }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ scale: 1.02 }}
-                className="glass-card rounded-xl p-6 border border-green-500/30"
+                className="glass-card-elevated p-6 border border-green-500/30"
               >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-xl font-bold text-white">{item.title}</h3>
@@ -180,7 +182,7 @@ function BuildGuideTab({ guide = {} }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.12, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ scale: 1.01 }}
-            className="glass-card rounded-xl overflow-hidden"
+            className="glass-card-elevated overflow-hidden"
           >
             <div className="flex items-stretch">
               <div className="w-16 bg-gradient-primary flex items-center justify-center text-2xl font-bold">{step.step || index + 1}</div>
@@ -235,7 +237,7 @@ function ResourcesTab({ resources = {} }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.06, ...appear }}
                 whileHover={{ scale: 1.02 }}
-                className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer"
+                className="glass-card-elevated p-4 flex items-center gap-4 cursor-pointer"
               >
                 <div className="text-2xl">📄</div>
                 <div className="flex-1"><h4 className="text-white font-bold">{doc.title}</h4><p className="text-gray-400 text-sm">{doc.description}</p></div>
@@ -258,7 +260,7 @@ function ResourcesTab({ resources = {} }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.06, ...appear }}
                 whileHover={{ scale: 1.02 }}
-                className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer"
+                className="glass-card-elevated p-4 flex items-center gap-4 cursor-pointer"
               >
                 <div className="text-2xl">🎥</div>
                 <div className="flex-1"><h4 className="text-white font-bold">{t.title}</h4><p className="text-gray-400 text-sm">{t.description}</p></div>
@@ -287,7 +289,7 @@ function RoadmapTab({ roadmap = {} }) {
             initial={{ opacity: 0, x: -32 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="glass-card rounded-xl p-6"
+            className="glass-card-elevated p-6"
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-xl font-bold">{index + 1}</div>
@@ -392,18 +394,22 @@ export default function StoryPage() {
   }, [currentTab, currentSlide, data, nextSlide]);
 
   if (loading) return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <MatrixBackground />
+      <AmbientGlow />
+      <GridBackground />
       <Navbar />
       <TerminalLoading repoName={repoUrl.split('/').pop()} />
     </div>
   )
 
   if (!data) return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <MatrixBackground />
+      <AmbientGlow />
+      <GridBackground />
       <Navbar />
-      <div className="pt-32 text-center"><p className="text-red-400">Failed to load. Please try again.</p></div>
+      <div className="pt-32 text-center relative" style={{ zIndex: 20 }}><p className="text-red-400">Failed to load. Please try again.</p></div>
     </div>
   )
 
@@ -412,10 +418,12 @@ export default function StoryPage() {
   const totalSlides = Math.max(slides.length, 7)
 
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <MatrixBackground />
+      <AmbientGlow />
+      <GridBackground />
       <Navbar />
-      <div className="pt-24 pb-8 px-4 relative z-10">
+      <div className="pt-24 pb-8 px-4 relative" style={{ zIndex: 20 }}>
         <div className="max-w-6xl mx-auto">
           <RepoStats meta={meta} />
           

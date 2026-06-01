@@ -28,7 +28,7 @@ export default function RiskSummaryPanel({ title = 'Risk Summary', graph, deltas
   })
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="glass-card rounded-2xl p-4">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="glass-card-elevated p-4">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold tracking-wide text-gray-200">{title}</h3>
         <div className="flex items-center gap-2">

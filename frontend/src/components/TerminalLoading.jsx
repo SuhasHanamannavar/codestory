@@ -43,7 +43,7 @@ export default function TerminalLoading({ repoName }) {
 
   return (
     <div className="pt-32 flex items-center justify-center">
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="glass rounded-2xl p-8 w-full max-w-2xl border border-primary-purple/30">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="glass-solid elevation-xl rounded-2xl p-8 w-full max-w-2xl" style={{ borderColor: 'rgba(124,58,237,0.25)' }}>
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-4">
           <div className="w-3 h-3 rounded-full bg-red-500" />
           <div className="w-3 h-3 rounded-full bg-yellow-500" />

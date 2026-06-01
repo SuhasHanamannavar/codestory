@@ -7,12 +7,12 @@ import HowItWorksPage from './pages/HowItWorksPage'
 import DocumentationPage from './pages/DocumentationPage'
 import TurnoverGuardPage from './pages/TurnoverGuardPage'
 
-
 function App() {
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/legacy" element={<LandingPage />} />
         <Route path="/story" element={<StoryPage />} />
         <Route path="/about" element={<AboutPage />} />

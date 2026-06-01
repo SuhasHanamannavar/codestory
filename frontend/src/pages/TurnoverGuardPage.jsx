@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import Navbar from '../components/Navbar'
 import MatrixBackground from '../components/MatrixBackground'
+import AmbientGlow from '../components/AmbientGlow'
+import GridBackground from '../components/GridBackground'
 import TurnoverHero from '../components/TurnoverHero'
 import TurnoverAgentPipeline from '../components/TurnoverAgentPipeline'
 import RescueTimeline from '../components/RescueTimeline'
@@ -319,8 +321,10 @@ export default function TurnoverGuardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-bg">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
         <MatrixBackground />
+        <AmbientGlow />
+        <GridBackground />
         <Navbar />
         <TerminalLoading repoName={repoUrl.split('/').pop()} />
       </div>
@@ -329,10 +333,12 @@ export default function TurnoverGuardPage() {
 
   if (!hasResults) {
     return (
-      <div className="min-h-screen bg-dark-bg">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
         <MatrixBackground />
+        <AmbientGlow />
+        <GridBackground />
         <Navbar />
-        <div className="pt-24 pb-10 px-4 relative z-10">
+        <div className="pt-24 pb-10 px-4 relative" style={{ zIndex: 20 }}>
           <div className="max-w-4xl mx-auto">
             <TurnoverHero />
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass rounded-2xl p-4 mb-6">
@@ -362,10 +368,12 @@ export default function TurnoverGuardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <MatrixBackground />
+      <AmbientGlow />
+      <GridBackground />
       <Navbar />
-      <div className="pt-24 pb-10 px-4 relative z-10">
+      <div className="pt-24 pb-10 px-4 relative" style={{ zIndex: 20 }}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold gradient-text">

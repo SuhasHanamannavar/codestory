@@ -117,11 +117,11 @@ export default function GraphView({
         {
           selector: 'edge',
           style: {
-            'width': 1,
-            'line-color': 'rgba(148, 163, 184, 0.25)',
+            'width': 1.5,
+            'line-color': 'rgba(124, 58, 237, 0.2)',
             'curve-style': 'bezier',
             'target-arrow-shape': 'triangle',
-            'target-arrow-color': 'rgba(148, 163, 184, 0.25)',
+            'target-arrow-color': 'rgba(124, 58, 237, 0.2)',
             'arrow-scale': 0.7
           }
         },
@@ -130,7 +130,12 @@ export default function GraphView({
           style: {
             'border-width': 4,
             'border-color': 'rgba(124, 58, 237, 0.95)',
-            'color': '#ffffff'
+            'color': '#ffffff',
+            'shadow-blur': 20,
+            'shadow-color': 'rgba(124, 58, 237, 0.4)',
+            'shadow-offset-x': 0,
+            'shadow-offset-y': 0,
+            'shadow-opacity': 1
           }
         },
         {
@@ -196,15 +201,32 @@ export default function GraphView({
   }, [selectedNodeId])
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="glass-card rounded-2xl p-4 h-[520px]">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="glass-card-elevated p-4 h-[520px]"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold tracking-wide text-gray-200">Knowledge Graph</h3>
           <p className="text-xs text-gray-500 mt-1">Modules, dependencies, ownership rings</p>
         </div>
-        <div className="text-xs font-mono text-gray-500">{ready ? 'interactive' : 'booting'}</div>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-gray-600 font-mono">click node to inspect</span>
+          <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${ready ? 'text-green-400 bg-green-500/10 border border-green-500/20' : 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20'}`}>
+            {ready ? 'live' : 'booting'}
+          </span>
+        </div>
       </div>
-      <div ref={containerRef} className="mt-3 h-[450px] w-full rounded-xl overflow-hidden border border-dark-border bg-dark-bg" />
+      <div
+        ref={containerRef}
+        className="mt-3 h-[450px] w-full rounded-xl overflow-hidden"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(124,58,237,0.03) 0%, transparent 70%)',
+          border: '1px solid rgba(30, 30, 46, 0.8)'
+        }}
+      />
     </motion.div>
   )
 }

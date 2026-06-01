@@ -6,7 +6,7 @@ export default function TurnoverHero() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="glass-card rounded-3xl p-8 md:p-12 text-center max-w-4xl mx-auto mb-8 relative overflow-hidden"
+      className="glass-card-elevated p-8 md:p-12 text-center max-w-4xl mx-auto mb-8"
     >
       <div className="text-5xl mb-4">🛡️</div>
 

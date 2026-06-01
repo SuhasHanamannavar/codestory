@@ -38,11 +38,11 @@ export default function TurnoverAgentPipeline({ active = false }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="glass-card rounded-2xl p-6"
+      className="glass-card-elevated p-6"
     >
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-sm font-semibold tracking-wide text-gray-200">Multi-Agent Pipeline</h3>
-        <div className={`text-xs font-mono px-2 py-0.5 rounded-full ${active ? 'text-green-400 bg-green-500/10 border border-green-500/30' : 'text-gray-500'}`}>
+        <div className={`text-xs font-mono px-2 py-0.5 rounded-full ${active ? 'text-green-400 bg-green-500/10 border border-green-500/30 elevation-xs' : 'text-gray-500'}`}>
           {active ? 'running' : 'idle'}
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function TurnoverAgentPipeline({ active = false }) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={`flex-1 md:flex-none glass rounded-xl p-4 border ${agent.border} ${active ? 'shadow-lg shadow-primary-purple/10' : ''}`}
+               className={`flex-1 md:flex-none glass rounded-xl p-4 border ${agent.border} ${active ? 'elevation-glow' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center text-lg`}>

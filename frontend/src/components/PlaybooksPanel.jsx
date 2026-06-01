@@ -4,7 +4,7 @@ function Section({ title, content }) {
   const text = (content || '').trim()
 
   return (
-    <div className="glass-card rounded-2xl p-4 h-full">
+    <div className="glass-card-elevated p-4 h-full">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold tracking-wide text-gray-200">{title}</h3>
         <motion.button

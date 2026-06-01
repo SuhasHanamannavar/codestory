@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Navbar from '../components/Navbar'
 import MatrixBackground from '../components/MatrixBackground'
+import AmbientGlow from '../components/AmbientGlow'
+import GridBackground from '../components/GridBackground'
 import RepoLoader from '../components/RepoLoader'
 import ResignationForm from '../components/ResignationForm'
 import GraphView from '../components/GraphView'
@@ -11,7 +13,6 @@ import NodeDetailsPanel from '../components/NodeDetailsPanel'
 import { apiPost, apiGet } from '../lib/apiClient'
 
 function normalizeGraph(input) {
-  // Supports multiple backend shapes during integration.
   if (!input) return null
   if (input.nodes && input.edges) return input
   if (input.graph?.nodes && input.graph?.edges) return input.graph
@@ -79,7 +80,7 @@ export default function DashboardPage() {
     setLoadingRepo(true)
     try {
       const data = await apiPost('/api/ingest', { github_url: url })
-      
+
       if (data.status === 'enqueued') {
         let jobFinished = false;
         let finalGraph = null;
@@ -100,7 +101,6 @@ export default function DashboardPage() {
         setGraph(g)
       }
     } catch (e) {
-      alert(`Ingestion failed: ${e.message}`);
       setGraph({ nodes: [], edges: [] });
     } finally {
       setLoadingRepo(false)
@@ -113,8 +113,6 @@ export default function DashboardPage() {
     setRescuePlan(null)
 
     try {
-      // Contract suggestion (Guru Raj): POST /api/simulate_resignation { github_url, developer }
-      // Expected: { before:{graph}, after:{graph}, deltas:[...] }
       const data = await apiPost('/api/simulate_resignation', { github_url: repoUrl, developer })
       const before = normalizeGraph(data?.before) || effectiveGraph
       const after = normalizeGraph(data?.after) || normalizeGraph(data?.graph) || before
@@ -125,7 +123,6 @@ export default function DashboardPage() {
         after
       })
 
-      // Smooth risk transition with ease-out for the "wow" moment.
       const start = performance.now()
       const dur = 1100
       const tick = (now) => {
@@ -136,12 +133,9 @@ export default function DashboardPage() {
       }
       requestAnimationFrame(tick)
 
-      // Orchestrated rescue plan (Pavan): POST /api/rescue_plan { github_url, developer }
-      // Expected: { impact_map, transfer_schedule_30d, playbooks:{technical,client} }
       const plan = await apiPost('/api/rescue_plan', { github_url: repoUrl, developer })
       setRescuePlan(plan)
     } catch {
-      // If orchestration not ready yet, keep UI stable.
     } finally {
       setSimulating(false)
     }
@@ -149,23 +143,39 @@ export default function DashboardPage() {
 
   const saveToNotion = async () => {
     if (!repoUrl || !rescuePlan) throw new Error('Run a simulation first')
-    // Contract suggestion (Pavan): POST /api/notion/save { github_url, rescue_plan }
     return apiPost('/api/notion/save', { github_url: repoUrl, rescue_plan: rescuePlan })
   }
 
   const playbooks = rescuePlan?.playbooks
+  const hasGraph = !!effectiveGraph?.nodes?.length
 
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <MatrixBackground />
+      <AmbientGlow />
+      <GridBackground />
       <Navbar />
 
-      <div className="pt-24 pb-10 px-4 relative z-10">
+      <div className="pt-24 pb-10 px-4 relative" style={{ zIndex: 20 }}>
         <div className="max-w-7xl mx-auto">
+          {!hasGraph && (
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary elevation-glow mb-4">
+                <span className="text-2xl">🛡️</span>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-3 tracking-tight gradient-text">
+                Turnover Dashboard
+              </h1>
+              <p className="text-base text-gray-500 max-w-xl mx-auto font-light">
+                Analyze developer ownership risk. Simulate resignations. Generate rescue plans.
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-6">
             <RepoLoader initialUrl={repoUrl} loading={loadingRepo} onLoad={loadRepo} />
 
-            <div className="grid lg:grid-cols-[320px_1fr_360px] gap-6 items-start">
+            <div className="grid lg:grid-cols-[320px_1fr_340px] gap-6 items-start">
               <div className="space-y-4">
                 <ResignationForm loading={simulating} onTrigger={triggerResignation} />
                 <NodeDetailsPanel graph={effectiveGraph} selectedNodeId={selectedNodeId} />
@@ -179,27 +189,23 @@ export default function DashboardPage() {
 
               <div className="space-y-4">
                 <RiskSummaryPanel
-                  title={simulation ? 'Risk Summary (After)' : 'Risk Summary'}
+                  title={simulation ? 'Risk After Simulation' : 'Risk Overview'}
                   graph={effectiveGraph}
                   deltas={simulation?.deltas}
                 />
-
                 <NotionSaveButton disabled={!rescuePlan} onSave={saveToNotion} />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-white">Rescue Playbooks</h2>
-                <div className="text-xs text-gray-500 font-mono">
-                  {rescuePlan ? 'generated' : 'run simulation to generate'}
+                <div className="text-xs text-gray-600 font-mono">
+                  {rescuePlan ? 'ready' : 'run simulation to generate'}
                 </div>
               </div>
-              <div className="mt-4">
-                <PlaybooksPanel playbooks={playbooks} />
-              </div>
+              <PlaybooksPanel playbooks={playbooks} />
             </div>
-
           </div>
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function ImpactSummary({ impactMap = {}, metrics = {} }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="glass-card rounded-2xl p-6"
+      className="glass-card-elevated p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold tracking-wide text-gray-200">Impact Assessment</h3>
