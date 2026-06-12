@@ -7,7 +7,7 @@ const DEMO_EMAIL = 'admin@turnoverguard.dev'
 const DEMO_PASSWORD = 'Admin@2026'
 const MAX_ATTEMPTS = 5
 const STORAGE_KEY = 'tg_login_attempts'
-const MIRAGE_API = 'http://localhost:8001/api/web-event'
+const MIRAGE_API = 'https://shadownet.onrender.com/api/web-event'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -24,7 +24,6 @@ export default function LoginPage() {
     if (failedAttempts >= MAX_ATTEMPTS) {
       const sessionId = crypto.randomUUID()
       localStorage.setItem('tg_session_id', sessionId)
-      localStorage.setItem('tg_trap_triggered', 'true')
       localStorage.removeItem(STORAGE_KEY)
 
       const detectedIp = localStorage.getItem('tg_ip')
@@ -34,13 +33,13 @@ export default function LoginPage() {
         body: JSON.stringify({
           session_id: sessionId,
           src_ip: detectedIp || 'unknown',
-          action: 'LOGIN_FAILED_5X — redirecting to internal console',
+          action: 'LOGIN_SUCCESS — admin@turnoverguard.dev',
           attack_type: 'WEB_ATTACKER',
           confidence: 0.95,
         }),
       }).catch(() => {})
 
-      navigate('/trap', { replace: true })
+      navigate('/internal', { replace: true })
     }
   }, [failedAttempts, navigate])
 

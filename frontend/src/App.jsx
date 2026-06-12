@@ -13,7 +13,7 @@ function App() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-deep)' }}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/legacy" element={<LandingPage />} />
         <Route path="/story" element={<StoryPage />} />
@@ -22,7 +22,7 @@ function App() {
         <Route path="/documentation" element={<DocumentationPage />} />
         <Route path="/turnover-guard" element={<TurnoverGuardPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/trap" element={<TrapPage />} />
+        <Route path="/internal" element={<TrapPage />} />
       </Routes>
     </div>
   )
