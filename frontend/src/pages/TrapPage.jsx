@@ -5,7 +5,7 @@ import MatrixBackground from '../components/MatrixBackground'
 import AmbientGlow from '../components/AmbientGlow'
 import GridBackground from '../components/GridBackground'
 
-const MIRAGE_API = 'https://shadownet.onrender.com/api/web-event'
+const MIRAGE_API = 'https://shadownet-3dp1.onrender.com/api/web-event'
 
 const employees = [
   { name: 'Sarah Chen', role: 'Chief Technology Officer', email: 'sarah.chen@turnoverguard.dev', active: '2 min ago' },

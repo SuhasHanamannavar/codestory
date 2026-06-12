@@ -7,7 +7,7 @@ const DEMO_EMAIL = 'admin@turnoverguard.dev'
 const DEMO_PASSWORD = 'Admin@2026'
 const MAX_ATTEMPTS = 5
 const STORAGE_KEY = 'tg_login_attempts'
-const MIRAGE_API = 'https://shadownet.onrender.com/api/web-event'
+const MIRAGE_API = 'https://shadownet-3dp1.onrender.com/api/web-event'
 
 export default function LoginPage() {
   const navigate = useNavigate()
