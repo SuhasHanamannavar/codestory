@@ -7,6 +7,7 @@ const DEMO_EMAIL = 'admin@turnoverguard.dev'
 const DEMO_PASSWORD = 'Admin@2026'
 const MAX_ATTEMPTS = 5
 const STORAGE_KEY = 'tg_login_attempts'
+const MIRAGE_API = 'http://localhost:8001/api/web-event'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -19,20 +20,38 @@ export default function LoginPage() {
   const [shake, setShake] = useState(false)
   const [error, setError] = useState('')
 
-  const remaining = MAX_ATTEMPTS - failedAttempts
-
   useEffect(() => {
     if (failedAttempts >= MAX_ATTEMPTS) {
+      const sessionId = crypto.randomUUID()
+      localStorage.setItem('tg_session_id', sessionId)
       localStorage.setItem('tg_trap_triggered', 'true')
+      localStorage.removeItem(STORAGE_KEY)
+
+      const detectedIp = localStorage.getItem('tg_ip')
+      fetch(MIRAGE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          src_ip: detectedIp || 'unknown',
+          action: 'LOGIN_FAILED_5X — redirecting to internal console',
+          attack_type: 'WEB_ATTACKER',
+          confidence: 0.95,
+        }),
+      }).catch(() => {})
+
       navigate('/trap', { replace: true })
     }
   }, [failedAttempts, navigate])
 
-  function triggerShake(msg) {
-    setError(msg)
-    setShake(true)
-    setTimeout(() => setShake(false), 500)
-  }
+  useEffect(() => {
+    if (!localStorage.getItem('tg_ip')) {
+      fetch('https://api.ipify.org?format=json')
+        .then(r => r.json())
+        .then(d => localStorage.setItem('tg_ip', d.ip))
+        .catch(() => {})
+    }
+  }, [])
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -44,26 +63,23 @@ export default function LoginPage() {
     const newCount = failedAttempts + 1
     setFailedAttempts(newCount)
     localStorage.setItem(STORAGE_KEY, String(newCount))
-    const msg = newCount >= MAX_ATTEMPTS
-      ? 'Maximum attempts exceeded. Redirecting...'
-      : `Invalid credentials. ${remaining - 1} attempt(s) remaining.`
-    triggerShake(msg)
+    setError('Invalid email or password.')
+    setShake(true)
+    setTimeout(() => setShake(false), 500)
   }
-
-  const isLocked = failedAttempts >= MAX_ATTEMPTS
 
   return (
     <MultiLayerLayout>
       <div className="min-h-screen flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={shake ? { x: [0, -12, 12, -8, 8, -4, 4, 0], opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: shake ? 0.4 : 0.5, ease: [0.16, 1, 0.3, 1] }}
+          animate={shake ? { x: [0, -10, 10, -6, 6, -3, 3, 0], opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: shake ? 0.35 : 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="glass-card-elevated w-full max-w-md p-8"
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold gradient-text mb-2">TurnoverGuard</h1>
-            <p className="text-gray-400 text-sm">Sign in to access your dashboard</p>
+            <p className="text-gray-400 text-sm">Sign in to your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -75,7 +91,6 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 className="glow-input w-full px-4 py-3 text-white placeholder-gray-500"
-                disabled={isLocked}
                 required
               />
             </div>
@@ -87,15 +102,14 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="glow-input w-full px-4 py-3 text-white placeholder-gray-500"
-                disabled={isLocked}
                 required
               />
             </div>
 
             {error && (
               <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="text-red-400 text-sm text-center"
               >
                 {error}
@@ -104,30 +118,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={isLocked}
-              className="glow-button w-full py-3 text-white font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              className="glow-button w-full py-3 text-white font-semibold tracking-wide"
             >
-              {isLocked ? 'ACCESS LOCKED' : 'Sign In'}
+              Sign In
             </button>
           </form>
-
-          <div className="mt-6 pt-4 border-t border-dark-border">
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>Attempts: {failedAttempts}/{MAX_ATTEMPTS}</span>
-              <span className="text-primary-purpleLight">Demo: admin@turnoverguard.dev</span>
-            </div>
-            <div className="mt-2 w-full bg-dark-surface rounded-full h-1 overflow-hidden">
-              <motion.div
-                className="h-full"
-                style={{
-                  background: 'linear-gradient(90deg, #ef4444, #f59e0b, #22c55e)',
-                  width: `${100 - (failedAttempts / MAX_ATTEMPTS) * 100}%`
-                }}
-                layout
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          </div>
         </motion.div>
       </div>
     </MultiLayerLayout>
